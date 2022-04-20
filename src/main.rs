@@ -34,14 +34,14 @@ fn create_pipeline(
 ) -> Result<gst::Pipeline, Error> {
     gst::init()?;
 
-    let pipeline = gst::parse_launch(&format!(
-        "rtspsrc name=src location={} ! fakesink",
-        uri
-    ))?
-    .downcast::<gst::Pipeline>()
-    .expect("");
+    println!("uri: {}", uri);
+
+    let pipeline = gst::parse_launch(&format!("rtspsrc name=src location={} ! fakesink", uri))?
+        .downcast::<gst::Pipeline>()
+        .expect("");
 
     if username.is_some() && password.is_some() {
+        println!("authen: {} {}", username.unwrap(), password.unwrap());
         let src = pipeline.by_name("src").unwrap();
         src.set_property_from_str("user-id", username.unwrap());
         src.set_property_from_str("user-pw", password.unwrap());
