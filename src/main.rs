@@ -35,7 +35,7 @@ fn create_pipeline(
     gst::init()?;
 
     let pipeline = gst::parse_launch(&format!(
-        "rtspsrc name=src location='{}' ! fakesink",
+        "rtspsrc name=src location={} ! fakesink",
         uri
     ))?
     .downcast::<gst::Pipeline>()
