@@ -36,7 +36,7 @@ fn create_pipeline(
 
     println!("uri: {}", uri);
 
-    let pipeline = gst::parse_launch(&format!("rtspsrc name=src location={} timeout=10000000 ! fakesink", uri))?
+    let pipeline = gst::parse_launch(&format!("rtspsrc name=src location={} ! fakesink", uri))?
         .downcast::<gst::Pipeline>()
         .expect("");
 
