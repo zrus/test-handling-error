@@ -58,7 +58,8 @@ fn main_loop(pipeline: gst::Pipeline) -> Result<(), Error> {
         use gst::MessageView;
 
         match msg.view() {
-            MessageView::Eos(..) => {
+            MessageView::Eos(eos) => {
+                println!("{:?}", eos);
                 println!("Got Eos msg, done");
                 break;
             }
