@@ -51,7 +51,7 @@ fn create_pipeline(
 }
 
 fn main_loop(pipeline: gst::Pipeline) -> Result<(), Error> {
-    pipeline.set_state(gst::State::Paused)?;
+    pipeline.set_state(gst::State::Playing)?;
     let bus = pipeline.bus().expect("");
 
     for msg in bus.iter_timed(gst::ClockTime::NONE) {
