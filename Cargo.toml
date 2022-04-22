@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 gst = { package = "gstreamer", version = "*" }
+gst_app = { package = "gstreamer-app", version = "*" }
 derive_more = "*"
 anyhow = "*"

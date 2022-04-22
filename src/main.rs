@@ -36,7 +36,7 @@ fn create_pipeline(
 
     println!("uri: {}", uri);
 
-    let pipeline = gst::parse_launch(&format!("rtspsrc name=src location={} ! fakesink", uri))?
+    let pipeline = gst::parse_launch(&format!("rtspsrc name=src location={} ! appsink name=sink max-buffers=5 drop=true sync=true wait-on-eos=false", uri))?
         .downcast::<gst::Pipeline>()
         .expect("");
 
@@ -46,6 +46,21 @@ fn create_pipeline(
         src.set_property_from_str("user-id", username.unwrap());
         src.set_property_from_str("user-pw", password.unwrap());
     }
+
+    let sink = pipeline
+        .by_name("sink")
+        .expect("expected for element appsink")
+        .downcast::<gst_app::AppSink>()
+        .expect("expected for appsink object");
+
+    sink.set_callbacks(
+        gst_app::AppSinkCallbacks::builder()
+            .new_sample(move |appsink| match appsink.pull_sample() {
+                Ok(_) => Ok(gst::FlowSuccess::Ok),
+                Err(_) => Err(gst::FlowError::Error),
+            })
+            .build(),
+    );
 
     Ok(pipeline)
 }
