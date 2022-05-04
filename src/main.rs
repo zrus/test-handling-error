@@ -1,6 +1,9 @@
 use anyhow::Error;
 use derive_more::{Display, Error};
-use gst::prelude::{Cast, ElementExt, GObjectExtManualGst, GstBinExt, GstObjectExt};
+use gst::{
+    glib::translate::FromGlib,
+    prelude::{Cast, ElementExt, GObjectExtManualGst, GstBinExt, GstObjectExt},
+};
 
 use std::env;
 #[derive(Debug, Display, Error)]
@@ -16,22 +19,23 @@ struct ErrorMessage {
 enum GStreamerError {
     Retriable(String),
     Irretriable(String),
+    Undefined,
 }
 
 impl From<gst::glib::Error> for GStreamerError {
     fn from(err: gst::glib::Error) -> Self {
         unsafe {
+            let msg = err.message().to_owned();
             let raw = err.into_raw();
-            match (*raw).domain {
-                2434 => Self::Irretriable(String::from("URI contains invalid protocol")),
-                2626 => match (*raw).code {
-                    5 => Self::Irretriable(String::from("URI contains invalid path")),
-                    7 => Self::Irretriable(String::from("URI contains invalid domain")),
-                    _ => Self::Irretriable(String::from("URI invalid")),
-                },
-                2628 => Self::Irretriable(String::from("Unauthorized")),
-                2593 => Self::Irretriable(String::from("URI contains invalid port")),
-                _ => Self::Irretriable(String::from("Unhandled error")),
+            let domain = (*raw).domain;
+            let quark = gst::glib::Quark::from_glib(domain);
+            println!("{}: {}", quark.as_str(), msg);
+            match quark.as_str() {
+                "gst-resource-error-quark" => {
+                    GStreamerError::Irretriable(String::from("resource error"))
+                }
+                "gst-stream-error-quark" => GStreamerError::Retriable(String::from("stream error")),
+                _ => GStreamerError::Undefined,
             }
         }
     }
